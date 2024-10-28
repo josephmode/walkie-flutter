@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 class Index extends StatefulWidget {
   const Index({super.key});
@@ -10,18 +12,22 @@ class Index extends StatefulWidget {
 
 class _IndexState extends State<Index> {
   late IO.Socket socket;
+  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
     super.initState();
     // Inicializa y configura el socket
+
     socket = IO.io(
-      'http://3.143.217.20:9002',
+      'https://sockete.ddns.net',
       <String, dynamic>{
         'transports': ['websocket'], // Usa WebSockets como transporte
         'autoConnect': true, // Conexión automática
       },
     );
+
+    
 
     // Escucha cuando se conecta
     socket.onConnect((_) {
