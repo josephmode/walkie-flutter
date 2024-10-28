@@ -50,6 +50,7 @@ class _IndexState extends State<Index> {
       child: ElevatedButton(
         onPressed: () {
           // Envía un mensaje al servidor
+          print('tapped');
           socket.emit('message', 'Hola desde Flutter!');
         },
         child: const Text('Enviar mensaje'),
