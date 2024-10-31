@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Views/index.dart';
+//import 'Views/index.dart';
+import 'Views/prueba_recorder.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Walkie Talkie'),
         ),
-        body: const Index(),
+        body: const PruebaRecorder(),
       ),
     );
   }

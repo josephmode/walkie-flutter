@@ -20,7 +20,29 @@
 
             <data android:mimeType="text/plain" />
         </intent>
+        <intent>
+            <action android:name="android.media.browse.MediaBrowserService" />
+        </intent>
+        <intent>
+            <action android:name="androidx.media2.session.MediaSessionService" />
+        </intent>
+        <intent>
+            <action android:name="androidx.media2.session.MediaLibraryService" />
+        </intent>
     </queries>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="Manifest.permission.CAPTURE_AUDIO_OUTPUT" />
 
     <permission
         android:name="com.example.myapp.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -30,10 +52,13 @@
 
     <application
         android:name="android.app.Application"
+        android:allowBackup="true"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="myapp" >
+        android:label="myapp"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:theme="@style/AppTheme" >
         <activity
             android:name="com.example.myapp.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

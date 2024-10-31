@@ -1,65 +1,133 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/AudioControllers/audio_player.dart';
+import 'package:myapp/AudioControllers/audio_recorder.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-
-class Index extends StatefulWidget {
-  const Index({super.key});
+class PruebaRecorder extends StatefulWidget {
+  const PruebaRecorder({super.key});
 
   @override
-  State<Index> createState() => _IndexState();
+  State<PruebaRecorder> createState() => _IndexState();
 }
 
-class _IndexState extends State<Index> {
+class _IndexState extends State<PruebaRecorder> {
   late IO.Socket socket;
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
-    // Inicializa y configura el socket
+    _initSocket();
+    _initializeNotifications();
+    _initializeAudioPlayer();
+    _audioRecorder.init();
+  }
 
+  Future<void> _initializeAudioPlayer() async {
+    await _audioPlayer.init(); // Asegúrate de inicializar el reproductor
+  }
+
+  Future<void> _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings(
+            '@mipmap/ic_launcher'); // Asegúrate de tener un icono
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void _initSocket() {
     socket = IO.io(
-      'https://sockete.ddns.net',
+      'http://18.216.7.229:9002',
       <String, dynamic>{
-        'transports': ['websocket'], // Usa WebSockets como transporte
-        'autoConnect': true, // Conexión automática
+        'transports': ['websocket'],
+        'autoConnect': true,
       },
     );
 
-    
-
-    // Escucha cuando se conecta
     socket.onConnect((_) {
       print('Conectado al servidor');
     });
 
-    // Escucha errores de conexión
     socket.onConnectError((err) {
       print('Error de conexión: $err');
     });
 
-    // Escucha desconexiones
     socket.onDisconnect((_) {
       print('Desconectado del servidor');
-    });
-
-    // Escucha la respuesta del servidor
-    socket.on('response', (data) {
-      print('Respuesta recibida del servidor: $data');
     });
   }
 
   @override
+  void dispose() {
+    socket.dispose();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          // Envía un mensaje al servidor
-          print('tapped');
-          socket.emit('message', 'Hola desde Flutter!');
-        },
-        child: const Text('Enviar mensaje'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transmisión de Audio'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                print('tapped');
+                socket.emit('message', 'Hola desde Flutter');
+              },
+              child: const Text('Enviar mensaje'),
+            ),
+            const SizedBox(height: 20), // Espacio entre los botones
+            GestureDetector(
+              onLongPress: () async {
+                print('Iniciar pruebas de audio');
+                final directory = await getExternalStorageDirectory();
+                if (directory != null) {
+                  //final path = '${directory.path}/temp_recording.wav';
+                  const path ='/storage/emulated/0/Download/temp_recording.wav';
+                  print('Direccion: $path');
+                  //await _showNotification(path);
+                  await _audioRecorder.startRecording(path);
+                } else {
+                  // Manejar el caso en el que no se pudo obtener el directorio externo
+                  print('No se pudo obtener el directorio externo');
+                  // Por ejemplo, podrías mostrar un mensaje al usuario o usar una ruta alternativa
+                }
+                print('grabacion iniciada');
+              },
+              onLongPressEnd: (details) async {
+                // Se ejecuta al soltar el botón
+                print('Detener grabación');
+                await _audioRecorder.stopRecording();
+                print('grabacion detenida');
+
+                await Future.delayed(const Duration(seconds: 3));
+                String audioPath ='/storage/emulated/0/Download/temp_recording.wav';
+                await _audioPlayer.playAudio(audioPath);
+                print('Reproduciendo audio después de 2 segundos');
+              },
+              child: ElevatedButton(
+                // ElevatedButton como hijo del GestureDetector
+                onPressed: () {}, // Desactiva el onPressed del ElevatedButton
+                child: const Text('Audio'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
